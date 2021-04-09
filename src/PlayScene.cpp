@@ -40,7 +40,7 @@ void PlayScene::update()
 
 	m_CheckAgentLOS(m_pShip, m_pTarget);
 
-	//m_CheckPathNodeLOS();
+	m_CheckPathNodeLOS();
 }
 
 void PlayScene::clean()
@@ -106,13 +106,11 @@ void PlayScene::start()
 	m_pObstacle2->getTransform()->position = glm::vec2(400.0f, 100.0f);
 	addChild(m_pObstacle2);
 
-
 	// add the Obstacle to the scene as a start point
 	m_pObstacle3 = new Obstacle();
 	m_pObstacle3->getTransform()->position = glm::vec2(600.0f, 500.0f);
 	addChild(m_pObstacle3);
 
-	
 	// added the target to the scene a goal
 	m_pTarget = new Target();
 	m_pTarget->getTransform()->position = glm::vec2(600.0f, 300.0f);
@@ -284,22 +282,24 @@ bool PlayScene::m_CheckAgentLOS(Agent* agent, DisplayObject* object)
 		}
 		contactList.push_back(object); // add the target to the end of the list
 		const auto agentTarget = agent->getTransform()->position + agent->getCurrentDirection() * agent->getLOSDistance();
-		
-		hasLOS = CollisionManager::LOSCheck(agent->getTransform()->position, 
-			agent->getTransform()->position + agent->getCurrentDirection() * agent->getLOSDistance(), contactList, object);
 
 		// New version...
-		// hasLOS = CollisionManager::LOSCheck(agent, agentTarget, contactList, object);
+		hasLOS = CollisionManager::LOSCheck(agent, agentTarget, contactList, object);
 
 		agent->setHasLOS(hasLOS);
 	}
-
 	return hasLOS;
 }
 
 void PlayScene::m_CheckPathNodeLOS()
 {
-	// Fill in...
+	for (auto path_node : m_pGrid)
+	{
+		auto targetDirection = m_pTarget->getTransform()->position - path_node->getTransform()->position;
+		auto normalizedDirection = Util::normalize(targetDirection);
+		path_node->setCurrentDirection(normalizedDirection);
+		m_CheckAgentLOS(path_node, m_pTarget);
+	}
 }
 
 void PlayScene::m_toggleGrid(bool state)
@@ -314,4 +314,5 @@ void PlayScene::m_toggleGrid(bool state)
 PathNode* PlayScene::m_findClosestPathNode(Agent* agent)
 {
 	// Fill in...
+	return nullptr;
 }
