@@ -150,7 +150,48 @@ bool CollisionManager::lineRectCheck(const glm::vec2 line_start, const glm::vec2
 
 bool CollisionManager::lineRectEdgeCheck(const glm::vec2 line_start, const glm::vec2 rect_start, const float rect_width, const float rect_height)
 {
-	// Fill in...
+	bool state = false;
+
+	const auto x1 = line_start.x;
+	const auto y1 = line_start.y;
+
+	const auto rx = rect_start.x; // Assuming rect_start is top-left. May not be. Check back.
+	const auto ry = rect_start.y;
+	const auto rw = rect_width;
+	const auto rh = rect_height;
+
+	// Configure the left edge
+	const auto leftEdgeStart = glm::vec2(rx, ry);
+	const auto leftEdgeEnd = glm::vec2(rx, ry + rh);
+	const auto leftEdgeMidPoint = Util::lerp(leftEdgeStart, leftEdgeEnd, 0.5f);
+	// Ultra super-duper long version without temp variables...
+	// const auto leftEdgeMidPoint = Util::lerp(glm::vec2(rect_start.x, rect_start.y), glm::vec2(rect_start.x, rect_start.y + rect_height), 0.5f);
+
+	// Configure the right edge
+	const auto rightEdgeStart = glm::vec2(rx + rw, ry);
+	const auto rightEdgeEnd = glm::vec2(rx + rw, ry + rh);
+	const auto rightEdgeMidPoint = Util::lerp(rightEdgeStart, rightEdgeEnd, 0.5f);
+
+	// Configure the top edge
+	const auto topEdgeStart = glm::vec2(rx, ry);
+	const auto topEdgeEnd = glm::vec2(rx + rw, ry);
+	const auto topEdgeMidPoint = Util::lerp(topEdgeStart, topEdgeEnd, 0.5f);
+	
+	// Configure the bottom edge
+	const auto bottomEdgeStart = glm::vec2(rx, ry + rh);
+	const auto bottomEdgeEnd = glm::vec2(rx + rw, ry + rh);
+	const auto bottomEdgeMidPoint = Util::lerp(bottomEdgeStart, bottomEdgeEnd, 0.5f);
+
+	// Line-line comparisons
+	const auto left = lineLineCheck(glm::vec2(x1, y1), leftEdgeMidPoint, leftEdgeStart, leftEdgeEnd);
+	const auto right = lineLineCheck(glm::vec2(x1, y1), rightEdgeMidPoint, rightEdgeStart, rightEdgeEnd);
+	const auto top = lineLineCheck(glm::vec2(x1, y1), topEdgeMidPoint, topEdgeStart, topEdgeEnd);
+	const auto bottom = lineLineCheck(glm::vec2(x1, y1), bottomEdgeMidPoint, bottomEdgeStart, bottomEdgeEnd);
+
+	// Do the check
+	if (left || right || top || bottom) 
+		state = true;
+	return state;
 }
 
 int CollisionManager::minSquaredDistanceLineLine(glm::vec2 line1_start, glm::vec2 line1_end, glm::vec2 line2_start, glm::vec2 line2_end)
