@@ -365,29 +365,74 @@ bool CollisionManager::pointRectCheck(const glm::vec2 point, const glm::vec2 rec
 	return false;
 }
 
-// assumptions - the list of objects are stored so that they are facing the target and the target is loaded last
-bool CollisionManager::LOSCheck(glm::vec2 start_point, glm::vec2 end_point, const std::vector<DisplayObject*>& objects, DisplayObject* target)
+bool CollisionManager::LOSCheck(Agent* agent, glm::vec2 end_point, const std::vector<DisplayObject*>& objects, DisplayObject* target)
 {
+	const auto start_point = agent->getTransform()->position;
+
 	for (auto object : objects)
 	{
 		auto objectOffset = glm::vec2(object->getWidth() * 0.5f, object->getHeight() * 0.5f);
+		const auto rect_start = object->getTransform()->position - objectOffset;
+		const auto width = object->getWidth();
+		const auto height = object->getHeight();
 
-		// check if Line collides with an object in the list
-		if (lineRectCheck(start_point, end_point, object->getTransform()->position - objectOffset, object->getWidth(), object->getHeight()))
+		switch (object->getType())
 		{
-			// if the collision is with the target object the LOS is true
-			if (object->getType() == target->getType())
-			{
-				return true;
-			}
-			// if the line collides with an object in the list that is not the target then LOS is false
-			return false;
+			case OBSTACLE:
+				if (lineRectCheck(start_point, end_point, rect_start, width, height))
+					return false;
+				break;
+			case TARGET:
+				switch (agent->getType())
+				{
+					case AGENT: // Ship in current example. Can 'ship' see the target.
+						if (lineRectCheck(start_point, end_point, rect_start, width, height))
+							return true;
+						break;
+					case PATH_NODE:
+						if (lineRectEdgeCheck(start_point, rect_start, width, height))
+							return true;
+						break;
+					default:
+						// non-sequitur
+						std::cout << "ERROR: " << agent->getType() << std::endl;
+						break;
+				}
+				break;
+			default:
+				// non-sequitur
+				std::cout << "ERROR: " << object->getType() << std::endl;
+				break;
 		}
 	}
-
 	// if the line does not collide with an object that is the target then LOS is false
 	return false;
 }
+
+
+// assumptions - the list of objects are stored so that they are facing the target and the target is loaded last
+//bool CollisionManager::LOSCheck(glm::vec2 start_point, glm::vec2 end_point, const std::vector<DisplayObject*>& objects, DisplayObject* target)
+//{
+//	for (auto object : objects)
+//	{
+//		auto objectOffset = glm::vec2(object->getWidth() * 0.5f, object->getHeight() * 0.5f);
+//
+//		// check if Line collides with an object in the list
+//		if (lineRectCheck(start_point, end_point, object->getTransform()->position - objectOffset, object->getWidth(), object->getHeight()))
+//		{
+//			// if the collision is with the target object the LOS is true
+//			if (object->getType() == target->getType())
+//			{
+//				return true;
+//			}
+//			// if the line collides with an object in the list that is not the target then LOS is false
+//			return false;
+//		}
+//	}
+//
+//	// if the line does not collide with an object that is the target then LOS is false
+//	return false;
+//}
 
 
 CollisionManager::CollisionManager()
