@@ -313,6 +313,27 @@ void PlayScene::m_toggleGrid(bool state)
 
 PathNode* PlayScene::m_findClosestPathNode(Agent* agent)
 {
-	// Fill in...
-	return nullptr;
+	auto min = INFINITY;
+	PathNode* closestPathNode = nullptr;
+	
+	// Alex's extra...
+	std::vector<PathNode*> m_pNoLOSNodes;
+	for (auto path_node : m_pGrid)
+	{
+		if (path_node->hasLOS() == false)
+		{
+			m_pNoLOSNodes.push_back(path_node);
+		}
+	}
+
+	for (auto path_node : m_pNoLOSNodes) // Change to m_pGrid for Tom's
+	{
+		const auto distance = Util::distance(agent->getTransform()->position, path_node->getTransform()->position);
+		if (distance < min)
+		{
+			min = distance;
+			closestPathNode = path_node;
+		}
+	}
+	return closestPathNode;
 }
